@@ -20,13 +20,28 @@ const RUTAS_ICONO = {
   exito: "M10 2a8 8 0 100 16 8 8 0 000-16zm-1.2 11.4L5.6 10.2l1.4-1.4 1.8 1.8 4.2-4.2 1.4 1.4z",
   advertencia: "M10 2l8.5 15H1.5zM9 7h2v5H9zm0 6h2v2H9z",
   error: "M10 2a8 8 0 100 16 8 8 0 000-16zm3.5 10.1l-1.4 1.4L10 11.4l-2.1 2.1-1.4-1.4L8.6 10 6.5 7.9l1.4-1.4L10 8.6l2.1-2.1 1.4 1.4L11.4 10z",
+  inicio: "M10 2.5l7.5 6.5V17a.5.5 0 01-.5.5h-4.5v-5h-5v5H3a.5.5 0 01-.5-.5V9z",
+  equipos: "M4 4.5A1.5 1.5 0 015.5 3h9A1.5 1.5 0 0116 4.5V12H4zM2 13h16v.5a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 13.5z",
+  diagnostico: "M8.5 3a5.5 5.5 0 014.4 8.8l4.1 4.1-1.1 1.1-4.1-4.1A5.5 5.5 0 118.5 3zm0 1.5a4 4 0 100 8 4 4 0 000-8z",
+  historial: "M10 2a8 8 0 100 16 8 8 0 000-16zm0 1.5a6.5 6.5 0 110 13 6.5 6.5 0 010-13zM9.25 6h1.5v4.2l2.9 1.7-.75 1.3-3.65-2.2z",
+  admin: "M10 2l6.5 2.5v5c0 4-2.7 6.8-6.5 8.5-3.8-1.7-6.5-4.5-6.5-8.5v-5z",
+  cumple: "M7.6 13.4L4.2 10 3 11.2l4.6 4.6L17 6.4l-1.2-1.2z",
+  no: "M5.3 4.2L10 8.9l4.7-4.7 1.1 1.1L11.1 10l4.7 4.7-1.1 1.1L10 11.1l-4.7 4.7-1.1-1.1L8.9 10 4.2 5.3z",
+  sin: "M10 2a8 8 0 100 16 8 8 0 000-16zm0 11.5a1 1 0 110 2 1 1 0 010-2zM10 5c1.9 0 3 1.1 3 2.6 0 1.1-.6 1.7-1.3 2.2-.5.4-.7.6-.7 1.2H9c0-1 .4-1.5 1-2 .6-.4.9-.7.9-1.3 0-.6-.5-1-.9-1s-1 .4-1 1H7c0-1.5 1.1-2.7 3-2.7z",
 };
 export function icono(nombre) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 20 20"); svg.setAttribute("class", "icono"); svg.setAttribute("aria-hidden", "true");
   const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  p.setAttribute("d", RUTAS_ICONO[nombre]); svg.append(p);
+  p.setAttribute("d", RUTAS_ICONO[nombre]); p.setAttribute("fill-rule", "evenodd"); svg.append(p);
   return svg;
+}
+
+/* Anillo con el porcentaje (decorativo: el valor también está escrito como texto). */
+export function anillo(valor, tamano = "") {
+  const a = h("span", { class: `anillo ${tamano}`.trim() }, h("span", null, `${Math.round(valor)}%`));
+  a.style.setProperty("--p", String(valor));
+  return a;
 }
 
 export function mensaje(tipo, texto) {
@@ -124,7 +139,7 @@ export const cargando = (texto = "Cargando…") => h("p", { class: "cargando", r
 export function tabla(titulo, columnas, filas) {
   return h("div", { class: "tabla-scroll", role: "region", "aria-label": titulo, tabindex: "0" },
     h("table", null, h("caption", null, titulo), h("thead", null, h("tr", null, columnas.map((c) => h("th", { scope: "col" }, c)))),
-      h("tbody", null, filas.map((f) => h("tr", null, f.map((c) => h("td", null, c)))))));
+      h("tbody", null, filas.map((f) => h("tr", null, f.map((c, i) => h("td", { "data-label": columnas[i] }, c)))))));
 }
 
 /* Aviso que se muestra una sola vez en la página siguiente (por ejemplo, tras guardar). */

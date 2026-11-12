@@ -2,6 +2,8 @@
 import { api } from "../api.js";
 import { anunciar, avisar, campo, cargando, formulario, h, mensaje, porcentaje } from "../ui.js";
 
+const LETRAS = "ABCDEFGH";
+
 export async function diagnostico(params) {
   const { equipos } = await api("get", "/api/equipos");
   const nodo = h("div");
@@ -28,15 +30,15 @@ async function iniciar(nodo, equipo, respuestas) {
   const responder = (valor) => iniciar(nodo, equipo, [...respuestas, { hecho: p.pregunta.hecho, valor }]);
   const titulo = h("h2", { id: "pregunta", tabindex: "-1" }, p.pregunta.texto);
   nodo.replaceChildren(h("h1", null, `Diagnóstico de ${equipo.nombre}`),
-    h("section", { class: "tarjeta", "aria-labelledby": "pregunta" },
-      h("p", { class: "paso-numero" }, `Pregunta ${p.numero} de máximo ${p.maximo}`),
-      h("progress", { max: p.maximo, value: p.numero - 1, "aria-label": "Progreso del diagnóstico" }), titulo,
+    h("div", { class: "progreso" }, h("div", { class: "progreso-texto" }, h("span", null, `Pregunta ${p.numero}`), h("span", null, `Máximo ${p.maximo}`)),
+      h("progress", { max: p.maximo, value: p.numero - 1, "aria-label": "Progreso del diagnóstico" })),
+    h("section", { class: "tarjeta pregunta", "aria-labelledby": "pregunta" }, titulo,
       h("div", { class: "opciones", role: "group", "aria-labelledby": "pregunta" },
-        p.pregunta.opciones.map((o) => h("button", { type: "button", class: "boton opcion", onclick: () => responder(o.valor) }, o.etiqueta)),
-        h("button", { type: "button", class: "boton opcion", onclick: () => responder(null) }, "No sé")),
+        p.pregunta.opciones.map((o, i) => h("button", { type: "button", class: "boton opcion", onclick: () => responder(o.valor) }, h("span", { class: "letra", "aria-hidden": "true" }, LETRAS[i]), o.etiqueta)),
+        h("button", { type: "button", class: "boton opcion neutra", onclick: () => responder(null) }, h("span", { class: "letra", "aria-hidden": "true" }, "?"), "No sé")),
       h("div", { class: "acciones" }, respuestas.length ? h("button", { type: "button", class: "boton", onclick: () => iniciar(nodo, equipo, respuestas.slice(0, -1)) }, "Volver a la pregunta anterior") : null,
         h("a", { class: "boton sutil", href: "#/" }, "Cancelar diagnóstico"))),
-    h("details", null, h("summary", null, "Causas más probables hasta ahora"),
+    h("details", { class: "pregunta" }, h("summary", null, "Causas más probables hasta ahora"),
       h("ul", { class: "limpia sin-vinetas" }, p.ranking.slice(0, 3).map((r) => h("li", null, `${r.nombre}: ${porcentaje(r.peso)}`))),
       h("p", { class: "ayuda" }, "Este ranking se actualiza con cada respuesta.")));
   titulo.focus();

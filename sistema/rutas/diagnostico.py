@@ -53,12 +53,12 @@ def paso():
 
 def _reglas(filtro: str, params):
     """Reglas de diagnóstico con sus condiciones (una fila por condición)."""
-    filas = todos(f"""SELECT r.id, r.codigo, r.texto, h.codigo AS hipotesis, f.nombre AS hecho, f.descripcion, c.operador, c.valor
+    filas = todos(f"""SELECT r.id, h.codigo AS hipotesis, f.nombre AS hecho, f.descripcion, c.operador, c.valor
                       FROM kb.regla r JOIN kb.hipotesis h ON h.id = r.hipotesis_id JOIN kb.regla_condicion c ON c.regla_id = r.id
-                      JOIN kb.hecho f ON f.id = c.hecho_id WHERE r.tipo = 'diagnostico' AND {filtro} ORDER BY r.codigo, c.orden""", params)
+                      JOIN kb.hecho f ON f.id = c.hecho_id WHERE r.tipo = 'diagnostico' AND {filtro} ORDER BY r.id, c.orden""", params)
     reglas: dict = {}
     for f in filas:
-        reglas.setdefault(f["id"], {"id": f["id"], "codigo": f["codigo"], "hipotesis": f["hipotesis"], "texto": f["texto"], "condiciones": []})["condiciones"].append(f)
+        reglas.setdefault(f["id"], {"id": f["id"], "hipotesis": f["hipotesis"], "condiciones": []})["condiciones"].append(f)
     return list(reglas.values())
 
 
@@ -70,7 +70,7 @@ def _evaluar(regla, evidencia):
         estado = "sin_dato" if real is None else ("cumple" if Condicion(c["hecho"], c["operador"], c["valor"]).evaluar(real) else "no_cumple")
         filas.append({"descripcion": c["descripcion"], "esperado": etiqueta(c["valor"]), "respondido": etiqueta(real) if real else None, "estado": estado})
     cumplidas = sum(f["estado"] == "cumple" for f in filas)
-    return filas, round(100 * cumplidas / len(filas), 2)
+    return filas, round(100 * cumplidas / len(filas), 2), cumplidas
 
 
 @bp.post("/diagnosticos")
@@ -120,9 +120,9 @@ def detalle(did):
     evidencias = todos("""SELECT f.nombre, f.tipo, f.descripcion, f.pregunta, dh.valor FROM tx.diagnostico_hecho dh JOIN kb.hecho f ON f.id = dh.hecho_id
                           WHERE dh.diagnostico_id = %s ORDER BY (f.tipo = 'derivado'), f.nodo, f.nombre""", (did,))
     valores = {e["nombre"]: e["valor"] for e in evidencias}
-    reglas = [{"codigo": r["codigo"], "hipotesis": r["hipotesis"], "texto": r["texto"], "condiciones": c, "coincidencia": p}
+    reglas = [{"hipotesis": r["hipotesis"], "condiciones": c, "coincidencia": p, "cumplidas": n}
               for r in _reglas("r.id IN (SELECT regla_id FROM tx.diagnostico_regla WHERE diagnostico_id = %s)", (did,))
-              for c, p in [_evaluar(r, valores)]]
+              for c, p, n in [_evaluar(r, valores)]]
     principal = next(h for h in hipotesis if h["principal"])
     return jsonify(diagnostico=d, concluyente=principal["codigo"] != PARAMS.codigo_cierre and principal["peso"] >= PARAMS.umbral_no_concluyente * 100,
                    hipotesis=hipotesis, reglas=reglas,

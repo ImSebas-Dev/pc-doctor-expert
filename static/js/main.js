@@ -1,6 +1,6 @@
 /* Arranque: sesión, navegación por hash con gestión de foco y título (WCAG 2.4.2, 2.4.3, 4.1.3). */
 import { api, sesion } from "./api.js";
-import { anunciar, avisar, avisos, cargando, h, mensaje } from "./ui.js";
+import { anunciar, avisar, avisos, cargando, h, icono, mensaje } from "./ui.js";
 import { ayuda, ingresar, perfil, registro } from "./vistas/cuenta.js";
 import { detalle, historial } from "./vistas/historial.js";
 import { diagnostico } from "./vistas/diagnostico.js";
@@ -14,8 +14,8 @@ const RUTAS = [
   ["/ingresar", ingresar, "anonima"], ["/registro", registro, "anonima"],
   ["/admin/usuarios", usuarios, "admin"], ["/admin/conocimiento", conocimiento, "admin"], ["/admin/reglas", reglas, "admin"], ["/admin/pruebas", pruebas, "admin"],
 ];
-const NAV = [["/", "Inicio"], ["/equipos", "Mis equipos"], ["/diagnostico", "Nuevo diagnóstico"], ["/historial", "Historial"]];
-const NAV_ADMIN = [["/admin/usuarios", "Administración"]];
+const NAV = [["/", "Inicio", "inicio"], ["/equipos", "Equipos", "equipos"], ["/diagnostico", "Diagnóstico", "diagnostico"], ["/historial", "Historial", "historial"]];
+const NAV_ADMIN = [["/admin/usuarios", "Admin", "admin"]];
 const raiz = document.getElementById("contenido");
 
 function coincidir(ruta) {
@@ -34,9 +34,10 @@ function pintarCabecera(camino) {
   const u = sesion.usuario;
   const enlaces = u ? [...NAV, ...(u.rol === "administrador" ? NAV_ADMIN : [])] : [];
   const actual = (ruta) => (ruta === "/" ? camino === "/" : camino.startsWith(ruta.split("/").slice(0, 2).join("/")));
-  document.getElementById("nav").replaceChildren(...enlaces.map(([ruta, texto]) => h("a", { href: `#${ruta}`, "aria-current": actual(ruta) ? "page" : null }, texto)));
-  document.getElementById("cuenta").replaceChildren(...(u ? [h("a", { href: "#/perfil", class: "boton sutil" }, u.nombre),
-    h("button", { type: "button", class: "boton", onclick: cerrarSesion }, "Cerrar sesión")] : [h("a", { href: "#/ingresar", class: "boton sutil" }, "Iniciar sesión"), h("a", { href: "#/registro", class: "boton primario" }, "Crear cuenta")]));
+  document.getElementById("nav").replaceChildren(...enlaces.map(([ruta, texto, ic]) => h("a", { href: `#${ruta}`, "aria-current": actual(ruta) ? "page" : null }, icono(ic), h("span", null, texto))));
+  document.getElementById("cuenta").classList.toggle("anonima", !u);
+  document.getElementById("cuenta").replaceChildren(...(u ? [h("a", { href: "#/perfil", class: "boton sutil perfil", "aria-label": `Mi perfil (${u.nombre})` }, h("span", { class: "avatar", "aria-hidden": "true" }, u.nombre.trim().charAt(0).toUpperCase()), h("span", { class: "nombre-usuario" }, u.nombre)),
+    h("button", { type: "button", class: "boton", onclick: cerrarSesion }, "Salir", h("span", { class: "solo-lector" }, " de la sesión"))] : [h("a", { href: "#/ingresar", class: "boton sutil" }, "Iniciar sesión"), h("a", { href: "#/registro", class: "boton primario" }, "Crear cuenta")]));
 }
 
 async function cerrarSesion() {

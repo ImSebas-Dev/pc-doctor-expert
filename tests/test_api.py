@@ -150,7 +150,7 @@ class Funcionalidad(Base):
         self.assertEqual(d["hipotesis"][0]["codigo"], "P01")
         self.assertGreaterEqual(len(d["hipotesis"][0]["recomendaciones"]), 2)
         self.assertTrue(d["evidencias"])
-        self.assertTrue(any(r["codigo"] == "R-P01" and r["coincidencia"] == 100 for r in d["reglas"]))
+        self.assertTrue(any(r["hipotesis"] == "P01" and r["coincidencia"] == 100 and r["cumplidas"] == len(r["condiciones"]) for r in d["reglas"]))
         self.assertEqual(u.pedir("get", "/api/diagnosticos").get_json()["diagnosticos"][0]["codigo"], "P01")
 
     def test_respuestas_manipuladas_se_rechazan(self):

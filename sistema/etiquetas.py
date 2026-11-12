@@ -5,6 +5,7 @@ _E = {
     "imagen_video": "Problemas de imagen o video", "lentitud": "Lentitud, bloqueos o bajo rendimiento",
     "red_audio_perifericos": "Falla de Internet, audio o periféricos",
     "audio": "Audio", "internet": "Internet", "mouse_usb": "Mouse USB", "teclado": "Teclado",
+    "alguno": "Alguno", "ninguno": "Ninguno", "maxima": "Al máximo", "deficiente": "Deficiente", "anormal": "Anormal",
     "distorsion": "La imagen se ve distorsionada", "sin_senal": "No hay señal en la pantalla",
 }
 
