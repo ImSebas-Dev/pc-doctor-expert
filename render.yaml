@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: pc-doctor-expert
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --threads 4 --timeout 60 --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/sesion
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: PCDOCTOR_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_CORREO
+        sync: false
+      - key: ADMIN_CLAVE
+        sync: false
